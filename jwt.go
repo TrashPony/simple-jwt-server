@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 type Token struct {
@@ -17,7 +18,10 @@ type Token struct {
 }
 
 func getTokenString(user User) (string, error) {
+
 	tk := &Token{UserID: user.ID, Role: user.Role, UserName: user.UserName}
+	tk.ExpiresAt = time.Now().Unix() + 86400 //(24ч)
+
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, err := token.SignedString([]byte(os.Getenv("TOKEN_SECRET")))
 	if err != nil {
@@ -47,6 +51,11 @@ func validateToken(ctx *fasthttp.RequestCtx) (*Token, int, error) {
 	})
 	if err != nil {
 		return nil, http.StatusForbidden, errors.New("invalid/malformed authentication token")
+	}
+
+	err = tk.Valid()
+	if err != nil {
+		return nil, http.StatusForbidden, err
 	}
 
 	if !token.Valid {

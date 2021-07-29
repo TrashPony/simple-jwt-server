@@ -27,7 +27,6 @@ func login() fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
 
 		var req Request
-
 		err := json.Unmarshal(ctx.Request.Body(), &req)
 		if err != nil {
 			respErr(ctx, http.StatusBadRequest, err.Error())
